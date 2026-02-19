@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
-import pickle
-import os
+import joblib
 import time
 import requests
 from streamlit_lottie import st_lottie
@@ -13,17 +12,10 @@ st.set_page_config(
     layout="wide"
 )
 
-# ---------------- LOAD MODEL SAFELY ---------------- #
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
-with open(os.path.join(BASE_DIR, "KNN_Heart.pkl"), "rb") as f:
-    model = pickle.load(f)
-
-with open(os.path.join(BASE_DIR, "scaler.pkl"), "rb") as f:
-    scaler = pickle.load(f)
-
-with open(os.path.join(BASE_DIR, "columns.pkl"), "rb") as f:
-    expected_columns = pickle.load(f)
+# ---------------- LOAD MODEL ---------------- #
+model = joblib.load("KNN_Heart.pkl")
+scaler = joblib.load("scaler.pkl")
+expected_columns = joblib.load("columns.pkl")
 
 # ---------------- LOTTIE FUNCTION ---------------- #
 def load_lottie(url):
@@ -37,12 +29,14 @@ heart_lottie = load_lottie("https://assets2.lottiefiles.com/packages/lf20_jcikwt
 # ---------------- CUSTOM CSS ---------------- #
 st.markdown("""
 <style>
+
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
 
 html, body, [class*="css"]  {
     font-family: 'Poppins', sans-serif;
 }
 
+/* Animated Gradient Background */
 .stApp {
     background: linear-gradient(-45deg, #12001a, #2b0036, #40004d, #1a001a);
     background-size: 400% 400%;
@@ -56,14 +50,18 @@ html, body, [class*="css"]  {
     100% {background-position: 0% 50%;}
 }
 
+/* Glass Card */
 .glass {
     background: rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
     border-radius: 20px;
     padding: 25px;
     border: 1px solid rgba(255,255,255,0.2);
+    box-shadow: 0 8px 32px 0 rgba(255, 0, 150, 0.3);
 }
 
+/* Button */
 .stButton>button {
     background: linear-gradient(90deg, #ff004f, #8000ff);
     color: white;
@@ -79,6 +77,7 @@ html, body, [class*="css"]  {
     box-shadow: 0px 0px 25px rgba(255,0,100,0.7);
 }
 
+/* Heart Beat Animation */
 .heartbeat {
     font-size: 45px;
     animation: beat 1s infinite;
@@ -92,6 +91,7 @@ html, body, [class*="css"]  {
     60% {transform: scale(1.2);}
     100% {transform: scale(1);}
 }
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -154,6 +154,7 @@ if st.button("🔮 Analyze Risk"):
 
     st.markdown("---")
 
+    # --------- AUTO COLOR SCALING --------- #
     if probability < 35:
         color = "green"
         status = "LOW RISK"
